@@ -16,7 +16,7 @@ async def bg_task():
     await client.wait_until_ready()
     channel = discord.Object(id=datastore['chat_channel_id'])
 
-    subs = ['worldnews', 'trailers', 'livestreamfail']
+    subs = ['worldnews', 'trailers', 'livestreamfail', 'dailyshow']
     last_msg = {}
     for sub in subs:
         last_msg[sub] = ''
@@ -26,22 +26,21 @@ async def bg_task():
         for sub in subs:
             try:
                 new_msg = reddit.Reddit.getTopStory(sub=sub, lim=1)
+                if last_msg[sub] != new_msg:
+                    if initial == 0:
+                        await client.send_message(channel, '**' + sub + '**\n' + new_msg)
+                    last_msg[sub] = new_msg
             except:
-                print('Something went wrong, fetching from ' + sub)
-            if last_msg[sub] != new_msg:
-                if initial == 0:
-                    await client.send_message(channel, '**' + sub + '**')
-                    await client.send_message(channel, new_msg)
-                last_msg[sub] = new_msg
-                initial = 1
-        await asyncio.sleep(600)
+                print('Exception: Fetching from ' + sub)
+        initial = 0
+        await asyncio.sleep(300)
 
 
 @client.event
 async def on_message(message):
-    # we do not want the bot to reply to itself
-    if message.author == client.user:
-        return
+    inmsg = str(message.author) + " in " + str(message.channel) + ": " + str(message.content)
+    print(inmsg)
+
     if message.content.startswith('order random'):
         msg = "AYES TO THE LEFT " + str(random.randint(1,1000)) + " NOES TO THE RIGHT " + str(random.randint(1,1000))
         await client.send_message(message.channel, msg)
@@ -52,21 +51,38 @@ async def on_message(message):
             file = wget.download(url=url,out='files/')
             print('Downloaded: ' + file)
         except:
-            await client.send_message(message.channel, 'DIVISSSSIIION!!! something went wrong, try again.')
+            print('Exception: Order anime wallpaper')
     elif message.content.startswith('order wallpaper'):
         try:
             url = reddit.Reddit.getRandomStory('wallpapers')
             await client.send_message(message.channel, url)
             file = wget.download(url=url, out='files/')
             print('Downloaded: ' + file)
-            #await client.send_file(message.channel, file)
         except:
-            await client.send_message(message.channel, 'DIVISSSSIIION!!! something went wrong, try again.')
+            print('Exception: Order wallpaper')
 
 
-    #elif message.content.startswith('order intensifies'):
-    #    await client.send_file(message.channel, 'order.jpg')
-
+    # delete certain messages after x seconds
+    if str(message.content).startswith('order'):
+        try:
+            print(inmsg + ' DELETED.')
+            await client.delete_message(message)
+        except:
+            print("Exception: Delete order message")
+    elif str(message.author).startswith('035479'):
+        try:
+            await asyncio.sleep(60)
+            print(inmsg + ' DELETED.')
+            await client.delete_message(message)
+        except:
+            print("Exception: Delete own message")
+    elif message.author == client.user:
+        try:
+            await asyncio.sleep(900)
+            print(inmsg + ' DELETED.')
+            await client.delete_message(message)
+        except:
+            print("Exception: Delete bot message")
 
 @client.event
 async def on_ready():

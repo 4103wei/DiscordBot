@@ -24,7 +24,7 @@ class Reddit():
         hot_subreddit = wn.rising(limit=lim)
         titles =""
         for submission in hot_subreddit:
-            titles = titles + '`' + submission.title + '`' + "\n" + submission.url + "\n"
+            titles = titles + '`' + submission.title + '`' + "\n<" + submission.url + ">\n"
         return titles
 
 
