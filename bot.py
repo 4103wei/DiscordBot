@@ -69,7 +69,7 @@ async def on_message(message):
             await client.delete_message(message)
         except:
             print("Exception: Delete order message")
-    elif str(message.author).startswith('035479'):
+    elif '4413'in str(message.author):
         try:
             await asyncio.sleep(60)
             print(inmsg + ' DELETED.')
@@ -78,7 +78,7 @@ async def on_message(message):
             print("Exception: Delete own message")
     elif message.author == client.user:
         try:
-            await asyncio.sleep(900)
+            await asyncio.sleep(3600)
             print(inmsg + ' DELETED.')
             await client.delete_message(message)
         except:
