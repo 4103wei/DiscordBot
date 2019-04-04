@@ -5,6 +5,8 @@ import reddit
 import json
 import asyncio
 import wget
+import wikipedia
+
 
 # Reading Token
 with open('discordLogin.json', 'r') as f:
@@ -40,14 +42,14 @@ async def bg_task():
 async def on_message(message):
     inmsg = str(message.author) + " in " + str(message.channel) + ": " + str(message.content)
     print(inmsg)
-
+    author = '<@' + str(message.author.id) + '>\n'
     if message.content.startswith('order random'):
         msg = "AYES TO THE LEFT " + str(random.randint(1,1000)) + " NOES TO THE RIGHT " + str(random.randint(1,1000))
-        await client.send_message(message.channel, msg)
+        await client.send_message(message.channel, author + msg)
     elif message.content.startswith('order anime wallpaper'):
         try:
             url = reddit.Reddit.getRandomStory('animewallpaper')
-            await client.send_message(message.channel, url)
+            await client.send_message(message.channel, author + url)
             file = wget.download(url=url,out='files/')
             print('Downloaded: ' + file)
         except:
@@ -55,16 +57,38 @@ async def on_message(message):
     elif message.content.startswith('order wallpaper'):
         try:
             url = reddit.Reddit.getRandomStory('wallpapers')
-            await client.send_message(message.channel, url)
+            await client.send_message(message.channel, author + url)
             file = wget.download(url=url, out='files/')
             print('Downloaded: ' + file)
         except:
             print('Exception: Order wallpaper')
-
+    elif message.content.startswith('order definition '):
+        try:
+            word = str(message.content)[17:]
+            print('Search for... ' + word)
+            msg = wikipedia.summary(word, sentences=1)
+            await client.send_message(message.channel, author + msg)
+        except:
+            try:
+                await client.send_message(message.channel, 'Could not find the definition')
+            except:
+                print('Exception: Order definition')
+    elif message.content.startswith('order help'):
+        try:
+            msg = '```css\n' \
+                  '[order help: Possible commands]\n' \
+                  '[order random: UK parliament will decide for you]\n' \
+                  '[order wallpaper: Returns a wallpaper]\n' \
+                  '[order anime wallpaper: Weeb up]\n' \
+                  '[order definition word: Definition of the word]\n```'
+            await client.send_message(message.channel, author + msg)
+        except:
+            print('Exception: Order help')
 
     # delete certain messages after x seconds
     if str(message.content).startswith('order'):
         try:
+            await asyncio.sleep(10)
             print(inmsg + ' DELETED.')
             await client.delete_message(message)
         except:
