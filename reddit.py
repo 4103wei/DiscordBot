@@ -19,8 +19,8 @@ class Reddit:
 
     def getRandomStory(self, sub = "worldnews"):
         wn = self.reddit.subreddit(sub)
-        hot_subreddit = wn.hot(limit=500)
-        r = random.randint(1, 500)
+        hot_subreddit = wn.hot(limit=250)
+        r = random.randint(1, 250)
         for i, post in enumerate(hot_subreddit):
             if i == r:
                 return post.url
