@@ -8,18 +8,22 @@ import wget
 import wikipedia
 
 
-# Reading Token
-with open('discordLogin.json', 'r') as f:
-    datastore = json.load(f)
-TOKEN = datastore['token']
+# Reading Setting
+with open('setting.json','r') as s:
+    setting = json.load(s)
+subs = setting['reddit_sub_tracking']
+token = setting['discord_token']
+announcement_ch_id = setting['discord_chat_channel_id']
 client = discord.Client()
+reddit = reddit.Reddit(client_id = setting['reddit_client_id'], client_secret = setting['reddit_client_secret'], user_agent = setting['reddit_user_agent'], username = setting['reddit_username'], password = setting['reddit_password'])
+
+
 
 async def bg_task():
     await client.wait_until_ready()
-    channel = discord.Object(id=datastore['chat_channel_id'])
-
-    subs = ['worldnews', 'trailers', 'livestreamfail', 'dailyshow']
+    channel = discord.Object(id=announcement_ch_id)
     last_msg = {}
+
     for sub in subs:
         last_msg[sub] = ''
 
@@ -27,7 +31,7 @@ async def bg_task():
     while not client.is_closed:
         for sub in subs:
             try:
-                new_msg = reddit.Reddit.getTopStory(sub=sub, lim=1)
+                new_msg = reddit.getTopStory(sub=sub, lim=1)
                 if last_msg[sub] != new_msg:
                     if initial == 0:
                         await client.send_message(channel, '**' + sub + '**\n' + new_msg)
@@ -48,7 +52,7 @@ async def on_message(message):
         await client.send_message(message.channel, author + msg)
     elif message.content.startswith('order anime wallpaper'):
         try:
-            url = reddit.Reddit.getRandomStory('animewallpaper')
+            url = reddit.getRandomStory('animewallpaper')
             await client.send_message(message.channel, author + url)
             file = wget.download(url=url,out='files/')
             print('Downloaded: ' + file)
@@ -56,7 +60,7 @@ async def on_message(message):
             print('Exception: Order anime wallpaper')
     elif message.content.startswith('order wallpaper'):
         try:
-            url = reddit.Reddit.getRandomStory('wallpapers')
+            url = reddit.getRandomStory('wallpapers')
             await client.send_message(message.channel, author + url)
             file = wget.download(url=url, out='files/')
             print('Downloaded: ' + file)
@@ -73,17 +77,28 @@ async def on_message(message):
                 await client.send_message(message.channel, 'Could not find the definition')
             except:
                 print('Exception: Order definition')
+    elif message.content.startswith('order show tracking'):
+        try:
+            msg = 'Currently tracking following subreddits: '
+            for sub in subs:
+                msg = msg + sub + ' '
+            await client.send_message(message.channel, author + msg)
+        except:
+            print('Exception: Order show tracking')
     elif message.content.startswith('order help'):
         try:
             msg = '```css\n' \
                   '[order help: Possible commands]\n' \
                   '[order random: UK parliament will decide for you]\n' \
+                  '[order show tracking: Show currently tracked subreddits]' \
                   '[order wallpaper: Returns a wallpaper]\n' \
                   '[order anime wallpaper: Weeb up]\n' \
                   '[order definition word: Definition of the word]\n```'
             await client.send_message(message.channel, author + msg)
         except:
             print('Exception: Order help')
+
+
 
     # delete certain messages after x seconds
     if str(message.content).startswith('order'):
@@ -117,4 +132,4 @@ async def on_ready():
 
 
 client.loop.create_task(bg_task())
-client.run(TOKEN)
+client.run(token)

@@ -1,0 +1,10 @@
+{
+  "discord_token": "Discord token",
+  "discord_chat_channel_id": "Channel ID in which announcements are made",
+  "reddit_client_id": "Reddit client ID",
+  "reddit_client_secret": "Reddit client secret",
+  "reddit_user_agent": "Reddit user agent",
+  "reddit_username": "Reddit user name",
+  "reddit_password": "Reddit user password",
+  "reddit_sub_tracking": ["worldnews", "trailers"]
+}

@@ -1,3 +1,3 @@
 # DiscordBot
 
-A bot for personal discord server. The bot checks for new  hot rising topics on different sub-reddits and posts the title including link on discord. 
+A bot for personal discord server. The bot automatically checks for new updates on specified subreddits among other functions.
