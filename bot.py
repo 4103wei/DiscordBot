@@ -8,6 +8,7 @@ import wget
 import wikipedia
 
 
+
 # Reading Setting
 with open('setting.json','r') as s:
     setting = json.load(s)
@@ -44,6 +45,13 @@ async def bg_task():
         initial = 0
         await asyncio.sleep(300)
 
+@client.event
+async  def on_member_update(before, after):
+    if (str(before.status) == 'offline' and str(after.status) != 'offline'):
+        await client.send_message(discord.Object(id=announcement_ch_id), str(before) + ' online.')
+    elif (str(before.status) != 'offline' and str(after.status) == 'offline'):
+        await client.send_message(discord.Object(id=announcement_ch_id), str(before) + ' offline.')
+
 
 @client.event
 async def on_message_delete(message):
@@ -51,23 +59,36 @@ async def on_message_delete(message):
     print(msg + ' DELETED')
     if message in recorded_msg:
         recorded_msg.remove(message)
-        print('Msg deleted, # of msg still to be deleted: ' + str(len(recorded_msg)))
+    print('# of msg still to be deleted: ' + str(len(recorded_msg)))
 
 
 @client.event
 async def on_reaction_add(reaction, user):
+    msg = str(reaction.message.author) + " in " + str(reaction.message.channel) + ": " + str(reaction.message.content)
+    print(msg + ' REACTED')
     if reaction.message in recorded_msg:
         recorded_msg.remove(reaction.message)
-        print('Msg removed from deletion, # of msg still to be deleted: ' + str(len(recorded_msg)))
+    print('# of msg still to be deleted: ' + str(len(recorded_msg)))
 
 
 @client.event
 async def on_message(message):
+    # recording part
+    # message will be put into a list, recorded_msg, all messages inside the list will be deleted at some point
+    if str(message.content).startswith('order') or ('4413' in str(message.author)) or (message.author == client.user):
+        recorded_msg.append(message)
+
+    # execution part
+    # if the message starts with order, something will be executed
     try:
         author = '<@' + str(message.author.id) + '>\n'
         if message.content.startswith('order random'):
-            msg = "AYES TO THE LEFT " + str(random.randint(1,1000)) + " NOES TO THE RIGHT " + str(random.randint(1,1000))
+            num = random.randint(0,650)
+            msg = "AYES TO THE LEFT " + str(num) + " NOES TO THE RIGHT " + str(650-num)
             await client.send_message(message.channel, author + msg)
+        elif message.content.startswith('order roll'):
+            num = random.randint(1,6)
+            await client.send_message(message.channel, str(num))
         elif message.content.startswith('order anime wallpaper'):
             url = reddit.getRandomStory('animewallpaper')
             await client.send_message(message.channel, author + url)
@@ -78,6 +99,12 @@ async def on_message(message):
             await client.send_message(message.channel, author + url)
             file = wget.download(url=url, out='files/')
             print('Downloaded: ' + file)
+        elif message.content.startswith('order reaction'):
+            url = reddit.getRandomStory('animereactionimages')
+            await client.send_message(message.channel, author + url)
+        elif message.content.startswith('order game'):
+            url = reddit.getRandomStory('webgames')
+            await client.send_message(message.channel, author + url)
         elif message.content.startswith('order definition '):
             word = str(message.content)[17:]
             print('Search for... ' + word)
@@ -92,10 +119,12 @@ async def on_message(message):
             msg = '```css\n' \
                   '[order help: Possible commands]\n' \
                   '[order random: UK parliament will decide for you]\n' \
-                  '[order show tracking: Show currently tracked subreddits]' \
+                  '[order roll: Roll a dice]\n' \
                   '[order wallpaper: Returns a wallpaper]\n' \
                   '[order anime wallpaper: Weeb up]\n' \
-                  '[order show tracking: Show currently tracked subreddits]' \
+                  '[order reaction: Reaction image]\n' \
+                  '[order game: Web game]\n' \
+                  '[order show tracking: Show tracked subreddits]\n' \
                   '[order definition word: Definition of the word]\n```'
             await client.send_message(message.channel, author + msg)
     except:
@@ -103,21 +132,19 @@ async def on_message(message):
 
 
 
-    # delete certain messages after x seconds, message will be recorded until deletion, because message might get deleted before x second.
+    # auto deletion part
+    # messages will be deleted after certain time
     try:
         if str(message.content).startswith('order'):
-            recorded_msg.append(message)
             await asyncio.sleep(10)
             if message in recorded_msg:
                 await client.delete_message(message)
         elif '4413'in str(message.author):
-            recorded_msg.append(message)
-            await asyncio.sleep(300)
+            await asyncio.sleep(120)
             if message in recorded_msg:
                 await client.delete_message(message)
         elif message.author == client.user:
-            recorded_msg.append(message)
-            await asyncio.sleep(10)
+            await asyncio.sleep(1800)
             if message in recorded_msg:
                 await client.delete_message(message)
     except:
