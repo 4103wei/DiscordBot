@@ -92,13 +92,9 @@ async def on_message(message):
         elif message.content.startswith('order anime wallpaper'):
             url = reddit.getRandomStory('animewallpaper')
             await client.send_message(message.channel, author + url)
-            file = wget.download(url=url,out='files/')
-            print('Downloaded: ' + file)
         elif message.content.startswith('order wallpaper'):
             url = reddit.getRandomStory('wallpapers')
             await client.send_message(message.channel, author + url)
-            file = wget.download(url=url, out='files/')
-            print('Downloaded: ' + file)
         elif message.content.startswith('order reaction'):
             url = reddit.getRandomStory('animereactionimages')
             await client.send_message(message.channel, author + url)
